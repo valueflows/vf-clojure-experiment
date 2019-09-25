@@ -4,10 +4,7 @@
             [com.walmartlabs.lacinia.util :as util]
             [next.jdbc.sql :as sql]
             [com.walmartlabs.lacinia.schema :as schema]
-            [com.walmartlabs.lacinia.resolve :refer [resolve-as]]
-            [com.walmartlabs.lacinia.schema :refer [tag-with-type]]
 
-            [com.stuartsierra.component :as component]
             [vfprocess.db.traversal :refer [incoming-vf-dfs
                                             first-neighbors]]
             [vfprocess.db.queries :refer [db
@@ -25,10 +22,10 @@
   (let [economicResource (queryEconomicResources id)
         first-node {:type (str "economicResource_" id)}
         incoming-valueflows (incoming-vf-dfs first-node)]
-    (do
-      (-> economicResource
-          (merge {:track incoming-valueflows})))))
+    (-> economicResource
+        (merge {:track incoming-valueflows}))))
 
+;; TODO: from scratch
 (defn mutationNewEconomicEvent
   [args]
   (let [{:keys [event]} args
@@ -42,7 +39,7 @@
       (cond
         (= (:resourceEffect action) "+")
         (if (= (:createResource event) true)
-          (do (sql/insert! db :EconomicResource economicResource))
+          (sql/insert! db :EconomicResource economicResource)
           (do
             (sql/update! db :EconomicResource
                          {:accountingQuantityNumericValue (+
@@ -98,38 +95,32 @@
     )
 )
 
-
-(defn resolve-trace
-  [_ _ _]
-  [(tag-with-type )]
-  )
-
 (defn resolver-map
   []
-  {:query/process (fn [context args value] (let [{:keys [id]} args]
+  {:query/process (fn [_ args _] (let [{:keys [id]} args]
                                              (queryProcesses id)))
-   :query/allProcesses (fn [context args value] (queryProcesses))
-   :query/agent (fn [context args value] (let [{:keys [id]} args]
+   :query/allProcesses (fn [_ _ _] (queryProcesses))
+   :query/agent (fn [_ args _] (let [{:keys [id]} args]
                                            (queryAgents id)))
-   :query/allAgents (fn [context args value] (queryAgents))
-   :query/economicEvent (fn [context args value] (let [{:keys [id]} args]
+   :query/allAgents (fn [_ _ _] (queryAgents))
+   :query/economicEvent (fn [_ args _] (let [{:keys [id]} args]
                                                    (queryEconomicEvents id)))
-   :query/allEconomicEvents (fn [context args value] (queryEconomicEvents))
-   :query/economicResource (fn [context args value] (let [{:keys [id]} args]
+   :query/allEconomicEvents (fn [_ _ _] (queryEconomicEvents))
+   :query/economicResource (fn [_ args _] (let [{:keys [id]} args]
                                                       (find-economicResource-by-id id)
                                                       ))
-   :query/allEconomicResources (fn [context args value] (queryEconomicResources))
-   :query/resourceSpecification (fn [context args value] (let [{:keys [id]} args]
+   :query/allEconomicResources (fn [_ _ _] (queryEconomicResources))
+   :query/resourceSpecification (fn [_ args _] (let [{:keys [id]} args]
                                                            (queryResourceSpecifications id)
                                                            ))
-   :query/allResourceSpecification (fn [context args value] (queryResourceSpecifications))
-   :query/action (fn [context args value] (let [{:keys [id]} args]
+   :query/allResourceSpecification (fn [_ _ _] (queryResourceSpecifications))
+   :query/action (fn [_ args _] (let [{:keys [id]} args]
                                             (queryActions id)))
-   :query/allActions (fn [context args value] (queryActions))
-   :query/unit (fn [context args value] (let [{:keys [id]} args]
+   :query/allActions (fn [_ _ _] (queryActions))
+   :query/unit (fn [_ args _] (let [{:keys [id]} args]
                                           (queryUnits id)))
-   :query/allUnits (fn [context args value] (queryUnits))
-   :mutation/createEconomicEvent (fn [context args value] (mutationNewEconomicEvent args))
+   :query/allUnits (fn [_ _ _] (queryUnits))
+   :mutation/createEconomicEvent (fn [_ args _] (mutationNewEconomicEvent args))
    })
 
        (defn load-schema

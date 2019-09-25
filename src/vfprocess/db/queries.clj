@@ -2,8 +2,7 @@
   (:require [next.jdbc :as jdbc]
             [next.jdbc.sql :as sql]
             [next.jdbc.optional :as opt]
-            [next.jdbc.specs :as specs]
-            [camel-snake-kebab.core :as csk]))
+            [next.jdbc.specs :as specs]))
 
 (specs/instrument) 
 (def ds
@@ -13,19 +12,16 @@
 
 (def db (jdbc/get-datasource ds))
 
-; Query EconomicResource by id or returns all the resources
-(defn queryEconomicResources
-  ([id]
-   (jdbc/execute-one!
-    db
-    ["select * from EconomicResource where id = ?" id]
-    {:builder-fn opt/as-unqualified-maps})
-   )
-  ([]
-   (jdbc/execute! db
-                  ["select * from EconomicResource"]
-                  {:builder-fn opt/as-unqualified-maps})))
 
+(defn- query
+  ([table id]
+    (jdbc/execute-one! db
+                       [(str "select * from " table " where id = ?" id)]
+                       {:builder-fn opt/as-unqualified-maps}))
+  ([table]
+   (jdbc/execute! db
+                  [(str "select * from " table)]
+                  {:builder-fn opt/as-unqualified-maps})))
 
 ; Query Process by id or returns all the processes
 (defn queryProcesses

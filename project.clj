@@ -13,6 +13,6 @@
                  [org.xerial/sqlite-jdbc "3.23.1"]
                  [com.walmartlabs/lacinia "0.34.0"]]
   :repl-options {;; If nREPL takes too long to load it may timeout,
-             ;; increase this to wait longer before timing out.
-             ;; Defaults to 30000 (30 seconds)
+                 ;; increase this to wait longer before timing out.
+                 ;; Defaults to 30000 (30 seconds)
                  :timeout 120000})
