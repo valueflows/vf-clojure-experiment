@@ -8,18 +8,13 @@
             [vfprocess.db.traversal :refer [incoming-vf-dfs
                                             first-neighbors]]
             [vfprocess.db.queries :refer [db
-                                          queryProcesses
-                                          queryAgents
-                                          queryEconomicResources
-                                          queryEconomicEvents
-                                          queryResourceSpecifications
-                                          queryUnits
-                                          queryActions
+                                          query
+                                          query-process
                                           createEconomicEvent]]
             [clojure.edn :as edn]))
 
 (defn find-economicResource-by-id [id]
-  (let [economicResource (queryEconomicResources id)
+  (let [economicResource (query "EconomicResource" id)
         first-node {:type (str "economicResource_" id)}
         incoming-valueflows (incoming-vf-dfs first-node)]
     (-> economicResource
@@ -29,9 +24,9 @@
 (defn mutationNewEconomicEvent
   [args]
   (let [{:keys [event]} args
-        economicResource (queryEconomicResources (:resourceInventoriedAs event))
-        toEconomicResource (queryEconomicResources (:toResourceInventoriedAs event))
-        action (queryActions (:action event))
+        economicResource (query "EconomicResource" (:resourceInventoriedAs event))
+        toEconomicResource (query "EconomicResource" (:toResourceInventoriedAs event))
+        action (query "Action" (:action event))
         economicEvent (createEconomicEvent event)
         ]
     (cond
@@ -98,28 +93,28 @@
 (defn resolver-map
   []
   {:query/process (fn [_ args _] (let [{:keys [id]} args]
-                                             (queryProcesses id)))
-   :query/allProcesses (fn [_ _ _] (queryProcesses))
+                                             (query-process id)))
+   :query/allProcesses (fn [_ _ _] (query-process))
    :query/agent (fn [_ args _] (let [{:keys [id]} args]
-                                           (queryAgents id)))
-   :query/allAgents (fn [_ _ _] (queryAgents))
+                                           (query "Agent" id)))
+   :query/allAgents (fn [_ _ _] (query "Agent"))
    :query/economicEvent (fn [_ args _] (let [{:keys [id]} args]
-                                                   (queryEconomicEvents id)))
-   :query/allEconomicEvents (fn [_ _ _] (queryEconomicEvents))
+                                                   (query "EconomicEvent" id)))
+   :query/allEconomicEvents (fn [_ _ _] (query "EconomicEvent"))
    :query/economicResource (fn [_ args _] (let [{:keys [id]} args]
                                                       (find-economicResource-by-id id)
                                                       ))
-   :query/allEconomicResources (fn [_ _ _] (queryEconomicResources))
+   :query/allEconomicResources (fn [_ _ _] (query "EconomicResource"))
    :query/resourceSpecification (fn [_ args _] (let [{:keys [id]} args]
-                                                           (queryResourceSpecifications id)
+                                                           (query "ResourceSpecification" id)
                                                            ))
-   :query/allResourceSpecification (fn [_ _ _] (queryResourceSpecifications))
+   :query/allResourceSpecification (fn [_ _ _] (query "ResourceSpecification"))
    :query/action (fn [_ args _] (let [{:keys [id]} args]
-                                            (queryActions id)))
-   :query/allActions (fn [_ _ _] (queryActions))
+                                            (query "Action" id)))
+   :query/allActions (fn [_ _ _] (query "Action"))
    :query/unit (fn [_ args _] (let [{:keys [id]} args]
-                                          (queryUnits id)))
-   :query/allUnits (fn [_ _ _] (queryUnits))
+                                          (query "Unit" id)))
+   :query/allUnits (fn [_ _ _] (query "Unit"))
    :mutation/createEconomicEvent (fn [_ args _] (mutationNewEconomicEvent args))
    })
 

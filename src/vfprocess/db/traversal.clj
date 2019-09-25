@@ -2,8 +2,7 @@
   (:require [next.jdbc :as jdbc]
             [next.jdbc.optional :as opt]
             [com.walmartlabs.lacinia.schema :refer [tag-with-type]]
-            [vfprocess.db.queries :refer [db queryEconomicResources queryProcesses]])
-  )
+            [vfprocess.db.queries :refer [db query query-process]]))
 
 (defn visited?
   "Predicate which returns true if the node v has been visited already, false otherwise."
@@ -13,15 +12,10 @@
 
 (defn first-neighbors
   [v]
-  (let [node (queryEconomicResources v)]
+  (let [node (query "EconomicResource" v)]
     (tag-with-type (-> node
                        (merge {:type (str "outputOf_" (:id node))})) :EconomicEvent)
     ))
-
-
-(defn visited? [v coll]
-  (some #(= % v) coll))
-
 
 (defn find-id
   [type]
@@ -50,7 +44,7 @@
 
       ; If the node is an economic event input of a process, retrieve the incoming resource
       (.contains (:type v) "inputOf")
-      (let [node (queryEconomicResources id)]
+      (let [node (query "EconomicResource" id)]
         (if (= nil node)
           nil
           (tag-with-type (-> node
@@ -58,7 +52,7 @@
 
       ; If the node is an economic event output of a process, retrieve the incoming process
       (.contains (:type v) "outputOf")
-      (let [node (queryProcesses (:outputOf v))]
+      (let [node (query-process (:outputOf v))]
         (if (= nil node)
           nil
           (tag-with-type (-> node
@@ -71,9 +65,8 @@
                                 {:builder-fn opt/as-unqualified-maps})]
         (if (= nil node)
           nil
-          (do
-            (tag-with-type (-> node
-                               (merge {:type (str "outputOf_" (:id node))})) :EconomicEvent))))
+          (tag-with-type (-> node
+                             (merge {:type (str "outputOf_" (:id node))})) :EconomicEvent)))
       :else nil)))
 
 (defn incoming-vf-dfs

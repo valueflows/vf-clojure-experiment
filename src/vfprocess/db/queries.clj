@@ -13,7 +13,7 @@
 (def db (jdbc/get-datasource ds))
 
 
-(defn- query
+(defn query
   ([table id]
     (jdbc/execute-one! db
                        [(str "select * from " table " where id = ?" id)]
@@ -24,7 +24,7 @@
                   {:builder-fn opt/as-unqualified-maps})))
 
 ; Query Process by id or returns all the processes
-(defn queryProcesses
+(defn query-process
   ([id]
     (let [process (jdbc/execute-one! db
                                      ["select * from Process where id = ?" id]
@@ -45,72 +45,19 @@
                   {:builder-fn opt/as-unqualified-maps}
                   )))
 
-; Query Agent by id or returns all the agents
-(defn queryAgents
-  ([id]
-    (jdbc/execute-one! db
-                       ["select * from Agent where id = ?" id]
-                       {:builder-fn opt/as-unqualified-maps}
-                       
-                       ))
-  ([]
-   (jdbc/execute! db
-                  ["select * from Agent"]
-                  {:builder-fn opt/as-unqualified-maps})))
-
-
-
-(defn queryResourceSpecifications
-  ([id]
-    (jdbc/execute-one! db
-                       ["select * from ResourceSpecification where id = ?" id]
-                       {:builder-fn opt/as-unqualified-maps}
-                       ))
-  ([]
-   (jdbc/execute! db
-                  ["select * from ResourceSpecification"]
-                  {:builder-fn opt/as-unqualified-maps}
-                  )))
-
-(defn queryActions
-  ([id]
-    (jdbc/execute-one! db
-                       ["select * from Action where id = ?" id]
-                       {:builder-fn opt/as-unqualified-maps}
-                       ))
-  ([]
-   (jdbc/execute! db
-                  ["select * from Action"]
-                  {:builder-fn opt/as-unqualified-maps}
-                  )))
-
-(defn queryUnits
-  ([id]
-    (jdbc/execute-one! db
-                       ["select * from Unit where id = ?" id]
-                       {:builder-fn opt/as-unqualified-maps}
-                       ))
-  ([]
-   (jdbc/execute! db
-                  ["select * from Unit"]
-                  {:builder-fn opt/as-unqualified-maps}
-                  )))
-
-
-
 (defn queryEconomicEvents
   ([id]
    (let [event (jdbc/execute-one! db
                                   ["select * from EconomicEvent where id = ?" id]
                                   {:builder-fn opt/as-unqualified-maps})
-         effortQuantityUnit (queryUnits (:unit event))
-         action (queryActions (:action event))
-         provider (queryAgents (:provider event))
-         receiver (queryAgents (:receiver event))
-         resourceInventoriedAs (queryEconomicResources (:resourceInventoriedAs event))
-         resourceConformsTo  (queryResourceSpecifications (:resourceConformsTo event))
-         inputOf (queryProcesses (:inputOf event))
-         outputOf (queryProcesses (:outputOf event))]
+         effortQuantityUnit (query "Unit" (:unit event))
+         action (query "Action" (:action event))
+         provider (query "Agent" (:provider event))
+         receiver (query "Agent" (:receiver event))
+         resourceInventoriedAs (query "EconomicResource" (:resourceInventoriedAs event))
+         resourceConformsTo  (query "ResourceSpecification" (:resourceConformsTo event))
+         inputOf (query-process (:inputOf event))
+         outputOf (query-process (:outputOf event))]
      (-> event
          (merge {:inputOf inputOf})
          (merge {:outputOf outputOf})
