@@ -30,10 +30,19 @@
 ; Query Process by id or returns all the processes
 (defn queryProcesses
   ([id]
-    (jdbc/execute-one! db
-                       ["select * from Process where id = ?" id]
-                       {:builder-fn opt/as-unqualified-maps}
-                       ))
+    (let [process (jdbc/execute-one! db
+                                     ["select * from Process where id = ?" id]
+                                     {:builder-fn opt/as-unqualified-maps})
+          inputs (jdbc/execute! db
+                                    ["select * from EconomicEvent where inputOf = ?" id]
+                                    {:builder-fn opt/as-unqualified-maps})
+
+          outputs (jdbc/execute! db
+                                    ["select * from EconomicEvent where outputOf = ?" id]
+                                    {:builder-fn opt/as-unqualified-maps})]
+      (-> process
+          (merge {:inputs inputs})
+          (merge {:outputs outputs}))))
   ([]
    (jdbc/execute! db
                   ["select * from Process"]
@@ -53,17 +62,7 @@
                   ["select * from Agent"]
                   {:builder-fn opt/as-unqualified-maps})))
 
-(defn queryEconomicEvents
-  ([id]
-    (jdbc/execute-one! db
-                       ["select * from EconomicEvent where id = ?" id]
-                       {:builder-fn opt/as-unqualified-maps}
-                       ))
-  ([]
-   (jdbc/execute! db
-                  ["select * from EconomicEvent"]
-                  {:builder-fn opt/as-unqualified-maps}
-                  )))
+
 
 (defn queryResourceSpecifications
   ([id]
@@ -100,6 +99,35 @@
                   ["select * from Unit"]
                   {:builder-fn opt/as-unqualified-maps}
                   )))
+
+
+
+(defn queryEconomicEvents
+  ([id]
+   (let [event (jdbc/execute-one! db
+                                  ["select * from EconomicEvent where id = ?" id]
+                                  {:builder-fn opt/as-unqualified-maps})
+         effortQuantityUnit (queryUnits (:unit event))
+         action (queryActions (:action event))
+         provider (queryAgents (:provider event))
+         receiver (queryAgents (:receiver event))
+         resourceInventoriedAs (queryEconomicResources (:resourceInventoriedAs event))
+         resourceConformsTo  (queryResourceSpecifications (:resourceConformsTo event))
+         inputOf (queryProcesses (:inputOf event))
+         outputOf (queryProcesses (:outputOf event))]
+     (-> event
+         (merge {:inputOf inputOf})
+         (merge {:outputOf outputOf})
+         (merge {:effortQuantityUnit effortQuantityUnit})
+         (merge {:action action})
+         (merge {:provider provider})
+         (merge {:receiver receiver})
+         (merge {:resourceConformsTo resourceConformsTo})
+         (merge {:resourceInventoriedAs resourceInventoriedAs}))))
+  ([]
+   (jdbc/execute! db
+                  ["select * from EconomicEvent"]
+                  {:builder-fn opt/as-unqualified-maps})))
 
 
 (defn createEconomicEvent

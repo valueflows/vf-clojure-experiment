@@ -14,70 +14,79 @@
                    :resourceInventoriedAs {:type Int}
                    :resourceConformsTo {:type Int}}}}
 
- :objects
- {:Process
-  {:description "An activity that changes inputs into outputs. It could transform or transport economic resource(s)."
-   :fields
-   {:id {:type Int}
-    :name {:description "An informal or formal textual identifier for an item. Does not imply uniqueness."
-           :type (non-null String)}
-    :note {:type String
-           :description "A textual description or comment."}
-    :before {:type String
-             :description "The economic event occurred prior to this date/time."}
-    :finished {:type Boolean
-               :description "The process is complete or not.  This is irrespective of if the original goal has been met, and indicates that no more will be done."}}}
 
-  :Action {:description "An informal or formal textual identifier for an object. Does not imply uniqueness."
-           :fields {:id {:type (non-null Int)}
-                    :name {:type (non-null String)}}}
+ :unions {:trackResult
+          {:members [:Process :EconomicEvent :EconomicResource]}}
 
-  :Unit {:description "Defines a unit of measurement, along with its display symbol."
-         :fields {:id {:type (non-null Int)}
-                  :name {:type String}}}
+ :objects {:Process {:description "An activity that changes inputs into outputs. It could transform or transport economic resource(s)."
+                     :fields
+                     {:id {:type Int}
+                      :name {:description "An informal or formal textual identifier for an item. Does not imply uniqueness."
+                             :type (non-null String)}
+                      :note {:type String
+                             :description "A textual description or comment."}
+                      :before {:type String
+                               :description "The economic event occurred prior to this date/time."}
+                      :finished {:type Boolean
+                                 :description "The process is complete or not.  This is irrespective of if the original goal has been met, and indicates that no more will be done."}
+                      ; Inverse relationships and queries
+                      :inputs {:type (list :EconomicEvent)}
+                      :outputs {:type (list :EconomicEvent)}
+                      :unplannedEconomicEvents {:type (list :EconomicEvent)}
+                      :committedInputs {:type (list :EconomicEvent)}
+                      :committedOutputs {:type (list :EconomicEvent)}
+                      }}
 
-  :Agent {:description "A person or a group"
-          :fields {:id {:type (non-null Int)}
-                   :name {:type String}
-                   :note {:type String}
-                   :type {:type String}}}
+           :Action {:description "An informal or formal textual identifier for an object. Does not imply uniqueness."
+                    :fields {:id {:type (non-null Int)}
+                             :name {:type (non-null String)}}}
 
-  :ResourceSpecification {:description "An informal or formal textual identifier for an object. Does not imply uniqueness."
-                          :fields {:id {:type (non-null Int)}
-                                   :name {:type String}
-                                   :note {:type String}}}
-
-  :EconomicResource {:description "References one or more concepts in a common taxonomy or other classification scheme for purposes of categorization or grouping."
-                     :fields {:id {:type (non-null Int)}
-                              :name {:type String}
-                              :valueflows {:type (list IncomingValueflows)}
-                              :accountingQuantityNumericValue {:type Float}
-                              :accountingQuantityUnit {:type Unit}
-                              :onhandQuantityUnit {:type Unit}
-                              :onhandQuantityNumericValue {:type Float}
-                              :unitOfEffort {:type Unit}
-                              :note {:type String}
-                              :conformsTo {:type ResourceSpecification}}}
-
-  :EconomicEvent {:description "Relates an economic event to a verb, such as consume, produce, work, improve, etc."
+           :Unit {:description "Defines a unit of measurement, along with its display symbol."
                   :fields {:id {:type (non-null Int)}
-                           :note {:type String}
-                           :hasPointInTime {:type String}
-                           :provider {:type Agent}
-                           :receiver {:type Agent}
-                           :action {:type Action}
-                           :inputOf {:type Process}
-                           :outputOf {:type Process}
-                           :resourceQuantityNumericValue {:type Float}
-                           :resourcequantityunit {:type Unit}
-                           :effortQuantityNumericValue {:type Float}
-                           :effortQuantityUnit {:type Unit}
-                           :resourceInventoriedAs {:type EconomicResource}
-                           :resourceConformsTo {:type ResourceSpecification}}}
+                           :name {:type String}}}
 
-  :IncomingValueflows {:description "Relates the whole valueflows starting from a resource"
-                       :fields {:text {:type String}
-                                :type {:type String}}}}
+           :Agent {:description "A person or a group"
+                   :fields {:id {:type (non-null Int)}
+                            :name {:type String}
+                            :note {:type String}
+                            :type {:type String}}}
+
+           :ResourceSpecification {:description "An informal or formal textual identifier for an object. Does not imply uniqueness."
+                                   :fields {:id {:type (non-null Int)}
+                                            :name {:type String}
+                                            :note {:type String}}}
+
+           :EconomicResource {:description "References one or more concepts in a common taxonomy or other classification scheme for purposes of categorization or grouping."
+                              :fields {:id {:type (non-null Int)}
+                                       :name {:type String}
+                                       :track {:type (list :trackResult)}
+                                       :accountingQuantityNumericValue {:type Float}
+                                       :accountingQuantityUnit {:type Unit}
+                                       :onhandQuantityUnit {:type Unit}
+                                       :onhandQuantityNumericValue {:type Float}
+                                       :unitOfEffort {:type Unit}
+                                       :note {:type String}
+                                       :conformsTo {:type ResourceSpecification}}}
+
+           :EconomicEvent {:description "Relates an economic event to a verb, such as consume, produce, work, improve, etc."
+                           :fields {:id {:type (non-null Int)}
+                                    :note {:type String}
+                                    :hasPointInTime {:type String}
+                                    :provider {:type Agent}
+                                    :receiver {:type Agent}
+                                    :action {:type Action}
+                                    :inputOf {:type Process}
+                                    :outputOf {:type Process}
+                                    :resourceQuantityNumericValue {:type Float}
+                                    :resourcequantityunit {:type Unit}
+                                    :effortQuantityNumericValue {:type Float}
+                                    :effortQuantityUnit {:type Unit}
+                                    :resourceInventoriedAs {:type EconomicResource}
+                                    :resourceConformsTo {:type ResourceSpecification}}}
+
+           :IncomingValueflows {:description "Relates the whole valueflows starting from a resource"
+                                :fields {:text {:type String}
+                                         :type {:type String}}}}
 
  :queries {; Agent module
            :agent {:type :Agent
@@ -89,7 +98,7 @@
                        :args {}
                        :resolve :query/allAgents}
 
-  ; Observation layer
+           ; Observation layer
            :economicEvent {:type :EconomicEvent
                            :description "Retrieve the economic event by its ID, if it exists."
                            :args {:id {:type ID}}
