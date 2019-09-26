@@ -10,7 +10,7 @@
             [vfprocess.db.queries :refer [db
                                           query
                                           query-process
-                                          createEconomicEvent]]
+                                          create-economic-event]]
             [clojure.edn :as edn]))
 
 (defn find-economicResource-by-id [id]
@@ -27,7 +27,7 @@
         economicResource (query "EconomicResource" (:resourceInventoriedAs event))
         toEconomicResource (query "EconomicResource" (:toResourceInventoriedAs event))
         action (query "Action" (:action event))
-        economicEvent (createEconomicEvent event)
+        economicEvent (create-economic-event event)
         ]
     (cond
       (some? (:resourceInventoriedAs event))

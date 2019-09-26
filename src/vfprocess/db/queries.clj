@@ -45,7 +45,7 @@
                   {:builder-fn opt/as-unqualified-maps}
                   )))
 
-(defn queryEconomicEvents
+(defn query-economic-events
   ([id]
    (let [event (jdbc/execute-one! db
                                   ["select * from EconomicEvent where id = ?" id]
@@ -73,7 +73,7 @@
                   {:builder-fn opt/as-unqualified-maps})))
 
 
-(defn createEconomicEvent
+(defn create-economic-event
   [event]
   (sql/insert! db
                 :EconomicEvent
