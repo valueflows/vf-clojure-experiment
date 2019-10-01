@@ -7,6 +7,7 @@
                  [com.walmartlabs/lacinia-pedestal "0.5.0"]
                  [io.aviso/logging "0.2.0"]
                  [org.clojure/java.jdbc "0.7.8"]
+                 [honeysql "0.9.1"]
                  [com.stuartsierra/component "0.3.2"]
                  [camel-snake-kebab "0.4.0"]
                  [seancorfield/next.jdbc "1.0.7"]
