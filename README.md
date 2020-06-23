@@ -1,4 +1,4 @@
-**f-clojure-experiment has moved to https://lab.allmende.io/valueflows/vf-clojure-experiment**
+**vf-clojure-experiment has moved to https://lab.allmende.io/valueflows/vf-clojure-experiment**
 
 ## License
 
