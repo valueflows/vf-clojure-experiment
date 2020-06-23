@@ -1,10 +1,4 @@
-# vfprocess
-
-A Clojure library designed to ... well, that part is up to you.
-
-## Usage
-
-FIXME
+**f-clojure-experiment has moved to https://lab.allmende.io/valueflows/vf-clojure-experiment**
 
 ## License
 
